@@ -186,12 +186,22 @@ public class Arena
 
 				if (!player.Controller.IsBot)
 				{
+					// Before the spawn: a weapon handed out from here on belongs to this arena's banner
+					Plugin.Hud.BeginRound(player.Controller);
+
 					// Bots plugin sets bot_prefix at EventRoundPreStart hence some delay to print opponent names. (Frame not enough sometimes)
 					Plugin.AddTimer(0.001f, () =>
 					{
 						if (player.Controller.IsValid)
 							if (Plugin.Config.CommandSettings.CenterAnnounceMode)
 							{
+								// The round banner replaces both the chat line and the center HTML
+								if (Plugin.Hud.Enabled)
+								{
+									Plugin.Hud.ShowArena(player, ArenaID, RoundType, opponents);
+									return;
+								}
+
 								var arenaName = Plugin.GetRequiredArenaName(ArenaID);
 								var opponentNames = Plugin.GetOpponentNames(player.Controller, opponents) ?? "Unknown";
 								var roundName = ArenaID == -1 ? Localizer.ForPlayer(player.Controller, "k4.general.random") : Localizer.ForPlayer(player.Controller, RoundType.Name ?? "Missing");

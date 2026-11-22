@@ -6,30 +6,47 @@
     <PublishDir>./bin/K4-Arenas/plugins/K4-Arenas/</PublishDir>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- net10.0 and CounterStrikeSharp 1.0.375 because PanoramaManager 0.4.3 targets net10.0 and needs CSS 1.0.374
+         or newer. The servers run CSS 1.0.380. -->
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.355">
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.375">
       <PrivateAssets>none</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="MySqlConnector" Version="2.4.1" />
+    <!-- The round banner (Plugin/HudService.cs). Copied next to the plugin by CopyPanoramaManager below:
+         each CounterStrikeSharp plugin loads from its own folder. Same version as our other HUD plugins. -->
+    <PackageReference Include="PanoramaManager" Version="0.4.3" />
     <ProjectReference Include="../src-shared/K4-ArenaSharedApi.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <!-- Compile-time only: servers load it from addons/counterstrikesharp/shared/KitsuneMenu/, and lib/KitsuneMenu.dll
+         is a copy of that file. -->
     <Reference Include="KitsuneMenu">
-      <HintPath>../../libs/KitsuneMenu.dll</HintPath>
+      <HintPath>../lib/KitsuneMenu.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- A class library does not copy package dlls on build, and turning CopyLocalLockFileAssemblies on would
+       copy CounterStrikeSharp.API's whole tree. This copies PanoramaManager only. -->
+  <Target Name="CopyPanoramaManager" AfterTargets="ResolveLockFileCopyLocalFiles">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Include="@(RuntimeCopyLocalItems)"
+                               Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'PanoramaManager'" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="CopyCustomFilesToPublishDirectory" AfterTargets="Publish">
     <Copy SourceFiles="$(ProjectDir)readme.txt" DestinationFolder="$(PublishDir)\" />
     <Copy SourceFiles="$(ProjectDir)/../src-shared/K4-ArenaSharedApi.dll" DestinationFolder="$(PublishDir)../../shared/K4-ArenaSharedApi/" />
-    <Copy Condition="Exists('$(ProjectDir)/../../libs/KitsuneMenu.dll')" SourceFiles="$(ProjectDir)/../../libs/KitsuneMenu.dll" DestinationFolder="$(PublishDir)../../shared/KitsuneMenu/" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="false" />
+    <Copy Condition="Exists('$(ProjectDir)/../lib/KitsuneMenu.dll')" SourceFiles="$(ProjectDir)/../lib/KitsuneMenu.dll" DestinationFolder="$(PublishDir)../../shared/KitsuneMenu/" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="false" />
   </Target>
 </Project>

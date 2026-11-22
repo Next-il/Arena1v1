@@ -1,0 +1,68 @@
+<root>
+	<styles>
+		<include src="s2r://panorama/styles/custom_game/hud_shared.vcss_c" />
+		<include src="s2r://panorama/styles/custom_game/arenas_hud.vcss_c" />
+	</styles>
+
+	<!--
+		Arena 1v1 HUD - the round banner that replaces the plugin's round start messages.
+
+		  ar_rb   round start, 4 s at top center: weapon, "vs <opponent>", the round type, ARENA n,
+		          and a line under it (the command tips, or "Top arena. Win to stay." in arena 1)
+		          (was the chat line "You are in arena 3 against shadow and playing Rifle round",
+		          the center HTML, and the !rounds / !afk tips in chat)
+
+		NOT INTERACTIVE. hittest false everywhere; the plugin opens it with CaptureInput = false.
+
+		CONTRACT (src-plugin/Plugin/HudService.cs must match)
+		  RootPanelId  = "ArenasRoot"   RevealClass = "show"   RowCount = 0
+		  CaptureInput = false          HideHud = None         SharedText = false
+
+		The root is full-screen and carries nothing visible itself; it is opened once per player and
+		stays open. The banner inside has its own "show" and slides down from the top.
+
+		DIALOG VARIABLES
+		  ar_rb_eyebrow ar_rb_title ar_rb_chip ar_rb_side_k ar_rb_side_v
+		  ar_rb_s0 ar_rb_s2 ar_rb_s4   the line under the title, plain text
+		  ar_rb_s1 ar_rb_s3            the commands inside it, in the accent color
+		  (a Label has no spans, so "Pick round types with !rounds. Sit out with !afk." is five labels)
+
+		CLASSES THE SERVER TOGGLES
+		  ar_rb           show | has-chip no-side no-sub | one of w-<weapon> or w-none
+		                  w-<weapon> is the CS2 icon name: w-ak47, w-awp, w-knife, w-hegrenade...
+		  ar_rb_s0..s4    hidden (empty piece), gap (a space before it)
+	-->
+	<Panel class="hud-screen" hittest="false">
+		<Panel id="ArenasRoot" class="ar-root" hittest="false">
+
+			<!-- ======================================================= round banner -->
+			<Panel id="ar_rb" class="ar-card ar-rb" hittest="false">
+				<Panel class="ar-rb-wpn" hittest="false">
+					<Panel class="ar-rb-img" hittest="false" />
+				</Panel>
+				<Panel class="ar-rb-sep" hittest="false" />
+				<Panel class="ar-rb-text" hittest="false">
+					<Label class="ar-rb-eyebrow" hittest="false" text="{s:ar_rb_eyebrow}" />
+					<Panel class="ar-rb-titlerow" hittest="false">
+						<Label class="ar-rb-title" hittest="false" text="{s:ar_rb_title}" />
+						<Label class="ar-rb-chip" hittest="false" text="{s:ar_rb_chip}" />
+					</Panel>
+					<Panel class="ar-rb-sub" hittest="false">
+						<Label id="ar_rb_s0" class="ar-rb-seg" hittest="false" text="{s:ar_rb_s0}" />
+						<Label id="ar_rb_s1" class="ar-rb-seg ar-rb-cmd" hittest="false" text="{s:ar_rb_s1}" />
+						<Label id="ar_rb_s2" class="ar-rb-seg" hittest="false" text="{s:ar_rb_s2}" />
+						<Label id="ar_rb_s3" class="ar-rb-seg ar-rb-cmd" hittest="false" text="{s:ar_rb_s3}" />
+						<Label id="ar_rb_s4" class="ar-rb-seg" hittest="false" text="{s:ar_rb_s4}" />
+					</Panel>
+				</Panel>
+				<Panel class="ar-rb-side" hittest="false">
+					<Panel class="ar-rb-side-in" hittest="false">
+						<Label class="ar-rb-side-k" hittest="false" text="{s:ar_rb_side_k}" />
+						<Label class="ar-rb-side-v" hittest="false" text="{s:ar_rb_side_v}" />
+					</Panel>
+				</Panel>
+			</Panel>
+
+		</Panel>
+	</Panel>
+</root>

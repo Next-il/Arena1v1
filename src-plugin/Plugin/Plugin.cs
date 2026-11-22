@@ -18,6 +18,9 @@
         public required PluginConfig Config { get; set; } = new PluginConfig();
         public GameConfig? GameConfig { get; set; }
         public Menu.KitsuneMenu Menu { get; private set; } = null!;
+
+        /// <summary>The round banner. Created once in Load; Enabled is false when Hud.Enabled is off or it failed to start.</summary>
+        public HudService Hud { get; private set; } = null!;
         public bool IsBetweenRounds = false;
         public bool HasDatabase = false;
 
@@ -76,6 +79,11 @@
 
             Menu = new Menu.KitsuneMenu(this);
 
+            // Spawned once: the library keeps the panel alive across rounds and maps
+            Hud = new HudService(this);
+            if (Config.Hud.Enabled)
+                Hud.Init();
+
             //** ? Core */
 
             Initialize_API();
@@ -113,7 +121,7 @@
                     if (Arenas is null) return;
 
                     var validPlayers = Utilities.GetPlayers()
-                        .Where(p => p?.IsValid == true && p.PlayerPawn?.IsValid == true && !p.IsBot && !p.IsHLTV && p.Connected == PlayerConnectedState.PlayerConnected);
+                        .Where(p => p?.IsValid == true && p.PlayerPawn?.IsValid == true && !p.IsBot && !p.IsHLTV && p.Connected == PlayerConnectedState.Connected);
 
                     foreach (CCSPlayerController player in validPlayers)
                     {
@@ -134,6 +142,11 @@
                     }
                 }, TimerFlags.REPEAT);
             }
+        }
+
+        public override void Unload(bool hotReload)
+        {
+            Hud?.Dispose();
         }
     }
 }

@@ -31,7 +31,7 @@ namespace K4Arenas
 			if (gameRules.WarmupPeriod == true || Arenas == null)
 				return;
 
-			List<CCSPlayerController> players = [.. Utilities.GetPlayers().Where(x => x?.IsValid == true && x.PlayerPawn?.IsValid == true && x.Team > CsTeam.Spectator && !x.IsHLTV && x.Connected == PlayerConnectedState.PlayerConnected)];
+			List<CCSPlayerController> players = [.. Utilities.GetPlayers().Where(x => x?.IsValid == true && x.PlayerPawn?.IsValid == true && x.Team > CsTeam.Spectator && !x.IsHLTV && x.Connected == PlayerConnectedState.Connected)];
 
 			if (!players.Any(p => !p.IsBot))
 				return;
@@ -105,11 +105,14 @@ namespace K4Arenas
 				if (!arenaPlayer.Controller.IsBot)
 				{
 					arenaPlayer.Controller.PrintToChat($" {Localizer.ForPlayer(playerController, "k4.general.prefix")} {Localizer.ForPlayer(playerController, "k4.chat.queue_added", WaitingArenaPlayers.Count)}");
-					arenaPlayer.Controller.PrintToChat($" {Localizer.ForPlayer(playerController, "k4.general.prefix")} {Localizer.ForPlayer(playerController, "k4.chat.arena_afk", Config.CommandSettings.AFKCommands.FirstOrDefault() ?? "Missing")}");
+					// With the round banner on, these two tips are its bottom line every round instead
+					if (!Hud.Enabled)
+						arenaPlayer.Controller.PrintToChat($" {Localizer.ForPlayer(playerController, "k4.general.prefix")} {Localizer.ForPlayer(playerController, "k4.chat.arena_afk", Config.CommandSettings.AFKCommands.FirstOrDefault() ?? "Missing")}");
 
 					if (HasDatabase)
 					{
-						arenaPlayer.Controller.PrintToChat($" {Localizer.ForPlayer(playerController, "k4.general.prefix")} {Localizer.ForPlayer(playerController, "k4.chat.arena_commands", Config.CommandSettings.GunsCommands.FirstOrDefault() ?? "Missing", Config.CommandSettings.RoundsCommands.FirstOrDefault() ?? "Missing")}");
+						if (!Hud.Enabled)
+							arenaPlayer.Controller.PrintToChat($" {Localizer.ForPlayer(playerController, "k4.general.prefix")} {Localizer.ForPlayer(playerController, "k4.chat.arena_commands", Config.CommandSettings.GunsCommands.FirstOrDefault() ?? "Missing", Config.CommandSettings.RoundsCommands.FirstOrDefault() ?? "Missing")}");
 
 						ulong steamID = playerController.SteamID;
 						Task.Run(async () =>

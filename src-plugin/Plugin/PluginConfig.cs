@@ -131,8 +131,23 @@ namespace K4Arenas
 		[JsonPropertyName("allowed-weapon-prefs")]
 		public AllowedWeaponPreferences AllowedWeaponPreferences { get; set; } = new AllowedWeaponPreferences();
 
+		// Next-il: an existing K4-Arenas.json without this section loads with the defaults below. Nothing writes
+		// the file back: mounted configs are shared by every server on a node.
+		[JsonPropertyName("Hud")]
+		public HudSettings Hud { get; set; } = new HudSettings();
+
 		[JsonPropertyName("ConfigVersion")]
 		public override int Version { get; set; } = 10;
+	}
+
+	public sealed class HudSettings
+	{
+		/// <summary>
+		/// The round banner at the top of the screen (Plugin/HudService.cs). Off: the round start chat line, the
+		/// center HTML and the command tips in chat come back.
+		/// </summary>
+		[JsonPropertyName("Enabled")]
+		public bool Enabled { get; set; } = true;
 	}
 
 	public sealed class CompatibilitySettings

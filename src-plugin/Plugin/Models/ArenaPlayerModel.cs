@@ -72,37 +72,57 @@ public class ArenaPlayer
 
 		Controller.RemoveWeapons();
 
+		// The weapon the round banner shows: the primary, else the pistol, else the knife
+		CsItem? bannerWeapon = null;
+
 		if (Config.CompatibilitySettings.GiveKnifeByDefault)
+		{
 			Controller.GiveNamedItem(CsItem.Knife);
+			bannerWeapon = CsItem.Knife;
+		}
 
 		if (roundType.PrimaryPreference == WeaponType.Unknown) // Warmup or Random round types
 		{
-			Controller.GiveNamedItem(WeaponModel.GetRandomWeapon(WeaponType.Unknown));
+			CsItem randomPrimary = WeaponModel.GetRandomWeapon(WeaponType.Unknown);
+			Controller.GiveNamedItem(randomPrimary);
 			Controller.GiveNamedItem(WeaponModel.GetRandomWeapon(WeaponType.Pistol));
+			bannerWeapon = randomPrimary;
 		}
 		else
 		{
+			CsItem? primaryGiven = null;
+			CsItem? secondaryGiven = null;
+
 			if (roundType.PrimaryWeapon != null)
 			{
 				Controller.GiveNamedItem((CsItem)roundType.PrimaryWeapon);
+				primaryGiven = roundType.PrimaryWeapon;
 			}
 			else if (roundType.UsePreferredPrimary && roundType.PrimaryPreference != null && WeaponPreferences != null)
 			{
 				WeaponType primaryPreferenceType = (WeaponType)roundType.PrimaryPreference;
 				CsItem? primaryPreference = WeaponPreferences.GetValueOrDefault(primaryPreferenceType) ?? WeaponModel.GetRandomWeapon(primaryPreferenceType);
 				Controller.GiveNamedItem((CsItem)primaryPreference);
+				primaryGiven = primaryPreference;
 			}
 
 			if (roundType.SecondaryWeapon != null)
 			{
 				Controller.GiveNamedItem((CsItem)roundType.SecondaryWeapon);
+				secondaryGiven = roundType.SecondaryWeapon;
 			}
 			else if (roundType.UsePreferredSecondary && WeaponPreferences != null)
 			{
 				CsItem? secondaryPreference = WeaponPreferences.GetValueOrDefault(WeaponType.Pistol) ?? WeaponModel.GetRandomWeapon(WeaponType.Pistol);
 				Controller.GiveNamedItem((CsItem)secondaryPreference);
+				secondaryGiven = secondaryPreference;
 			}
+
+			bannerWeapon = primaryGiven ?? secondaryGiven ?? bannerWeapon;
 		}
+
+		if (bannerWeapon != null)
+			Plugin.Hud.WeaponGiven(Controller, (CsItem)bannerWeapon);
 
 		Server.NextWorldUpdate(() =>
 		{
