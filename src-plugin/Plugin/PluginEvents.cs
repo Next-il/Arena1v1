@@ -123,6 +123,7 @@ namespace K4Arenas
 					return HookResult.Continue;
 
 				Hud.OnPlayerDisconnect(playerController.Slot);
+				PreferencesMenu?.Forget(playerController.Slot);
 
 				WaitingArenaPlayers = new Queue<ArenaPlayer>(WaitingArenaPlayers.Where(p => p.Controller != playerController));
 				Arenas?.ArenaList.ForEach(arena => arena.RemovePlayer(playerController));

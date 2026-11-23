@@ -26,12 +26,6 @@
     <ProjectReference Include="../src-shared/K4-ArenaSharedApi.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <!-- Compile-time only: servers load it from addons/counterstrikesharp/shared/KitsuneMenu/, and lib/KitsuneMenu.dll
-         is a copy of that file. -->
-    <Reference Include="KitsuneMenu">
-      <HintPath>../lib/KitsuneMenu.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
     <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -47,6 +41,5 @@
   <Target Name="CopyCustomFilesToPublishDirectory" AfterTargets="Publish">
     <Copy SourceFiles="$(ProjectDir)readme.txt" DestinationFolder="$(PublishDir)\" />
     <Copy SourceFiles="$(ProjectDir)/../src-shared/K4-ArenaSharedApi.dll" DestinationFolder="$(PublishDir)../../shared/K4-ArenaSharedApi/" />
-    <Copy Condition="Exists('$(ProjectDir)/../lib/KitsuneMenu.dll')" SourceFiles="$(ProjectDir)/../lib/KitsuneMenu.dll" DestinationFolder="$(PublishDir)../../shared/KitsuneMenu/" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="false" />
   </Target>
 </Project>

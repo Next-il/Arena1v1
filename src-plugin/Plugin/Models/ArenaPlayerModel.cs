@@ -6,8 +6,6 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Dapper;
 using K4ArenaSharedApi;
-using Menu;
-using Menu.Enums;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
@@ -157,20 +155,12 @@ public class ArenaPlayer
 		});
 	}
 
+	/// <summary>!rounds: the HUD menu on its Rounds tab, or the chat menu when the HUD menu is off or cannot draw.</summary>
 	public void ShowRoundPreferenceMenu()
 	{
-		if (Plugin.Config.CommandSettings.CenterMenuMode)
-		{
-			ShowCenterRoundPreferenceMenu();
-		}
-		else
-		{
-			ShowChatRoundPreferenceMenu();
-		}
-	}
+		if (Plugin.PreferencesMenu?.Open(Controller, PreferencesMenu.TabRounds) == true)
+			return;
 
-	private void ShowChatRoundPreferenceMenu()
-	{
 		ChatMenu roundPreferenceMenu = new ChatMenu(Localizer.ForPlayer(Controller, "k4.menu.roundpref.title"));
 		foreach (RoundType roundType in RoundType.RoundTypes)
 		{
@@ -185,43 +175,6 @@ public class ArenaPlayer
 		}
 
 		MenuManager.OpenChatMenu(Controller, roundPreferenceMenu);
-	}
-
-	private void ShowCenterRoundPreferenceMenu()
-	{
-		var items = new List<MenuItem>();
-		var defaultValues = new Dictionary<int, object>();
-
-		for (int i = 0; i < RoundType.RoundTypes.Count; i++)
-		{
-			RoundType roundType = RoundType.RoundTypes[i];
-			bool isRoundTypeEnabled = RoundPreferences.Contains(roundType);
-			items.Add(new MenuItem(MenuItemType.Bool, new MenuValue($"{Localizer.ForPlayer(Controller, roundType.Name)}: ")));
-			defaultValues[i] = isRoundTypeEnabled;
-		}
-
-		Plugin.Menu?.ShowScrollableMenu(Controller, Localizer.ForPlayer(Controller, "k4.menu.roundpref.title"), items, (buttons, menu, selected) =>
-		{
-			menu.RepeatedButtons = false;
-
-			if (buttons == MenuButtons.Back || buttons == MenuButtons.Exit)
-			{
-				Task.Run(SavePlayerPreferencesAsync);
-				return;
-			}
-
-			if (selected == null) return;
-			if (buttons == MenuButtons.Select)
-			{
-				RoundType roundType = RoundType.RoundTypes[menu.Option];
-				bool newValue = selected.Data[0] == 1;
-
-				if (newValue != RoundPreferences.Contains(roundType))
-				{
-					ToggleRoundPreference(roundType);
-				}
-			}
-		}, false, Config.CommandSettings.FreezeInMenu, 5, defaultValues, Config.CommandSettings.ShowMenuCredits);
 	}
 
 	private void ToggleRoundPreference(RoundType roundType)
@@ -246,20 +199,39 @@ public class ArenaPlayer
 		}
 	}
 
-	public void ShowWeaponPreferenceMenu()
+	/// <summary>
+	/// Turns one round type on or off, by id, without a chat line: the HUD menu shows the state. False when it would
+	/// turn off the last one, which nothing may do.
+	/// </summary>
+	public bool SetRoundPreference(RoundType roundType, bool enabled)
 	{
-		if (Plugin.Config.CommandSettings.CenterMenuMode)
+		int id = roundType.ID;
+		bool isEnabled = RoundPreferences.Any(r => r.ID == id);
+
+		if (enabled == isEnabled)
+			return true;
+
+		if (!enabled)
 		{
-			ShowCenterWeaponPreferenceMenu();
+			if (RoundPreferences.Count <= 1)
+				return false;
+
+			RoundPreferences.RemoveAll(r => r.ID == id);
 		}
 		else
 		{
-			ShowChatWeaponPreferenceMenu();
+			RoundPreferences.Add(roundType);
 		}
+
+		return true;
 	}
 
-	private void ShowChatWeaponPreferenceMenu()
+	/// <summary>!guns: the HUD menu on its Weapons tab, or the chat menu when the HUD menu is off or cannot draw.</summary>
+	public void ShowWeaponPreferenceMenu()
 	{
+		if (Plugin.PreferencesMenu?.Open(Controller, PreferencesMenu.TabWeapons) == true)
+			return;
+
 		ChatMenu weaponPreferenceMenu = new ChatMenu(Localizer.ForPlayer(Controller, "k4.menu.weaponpref.title"));
 		foreach (WeaponType weaponType in Enum.GetValues(typeof(WeaponType)))
 		{
@@ -275,39 +247,7 @@ public class ArenaPlayer
 		MenuManager.OpenChatMenu(Controller, weaponPreferenceMenu);
 	}
 
-	private void ShowCenterWeaponPreferenceMenu()
-	{
-		var items = new List<MenuItem>();
-		var values = new Dictionary<int, WeaponType>();
-		int count = 0;
-		foreach (WeaponType weaponType in Enum.GetValues(typeof(WeaponType)))
-		{
-			if (weaponType == WeaponType.Unknown || !IsAllowedWeaponType(weaponType))
-				continue;
-			items.Add(new MenuItem(MenuItemType.Button, [new MenuValue($"{Localizer.ForPlayer(Controller, $"k4.rounds.{weaponType.ToString().ToLower()}")}")]));
-			values.Add(count++, weaponType);
-		}
-
-		Plugin.Menu?.ShowScrollableMenu(Controller, Localizer.ForPlayer(Controller, "k4.menu.weaponpref.title"), items, (buttons, menu, selected) =>
-		{
-			menu.RepeatedButtons = false;
-
-			if (buttons == MenuButtons.Back || buttons == MenuButtons.Exit)
-			{
-				Task.Run(SavePlayerPreferencesAsync);
-				return;
-			}
-
-			if (selected == null) return;
-			if (buttons == MenuButtons.Select)
-			{
-				WeaponType selectedWeaponType = values[menu.Option];
-				ShowWeaponSubPreferenceMenu(selectedWeaponType);
-			}
-		}, false, Config.CommandSettings.FreezeInMenu, disableDeveloper: Config.CommandSettings.ShowMenuCredits);
-	}
-
-	private bool IsAllowedWeaponType(WeaponType weaponType)
+	public bool IsAllowedWeaponType(WeaponType weaponType)
 	{
 		return weaponType switch
 		{
@@ -321,57 +261,11 @@ public class ArenaPlayer
 		};
 	}
 
-	public void ShowWeaponSubPreferenceMenu(WeaponType weaponType)
-	{
-		if (Plugin.Config.CommandSettings.CenterMenuMode)
-		{
-			ShowCenterWeaponSubPreferenceMenu(weaponType);
-		}
-		else
-		{
-			ShowChatWeaponSubPreferenceMenu(weaponType);
-		}
-	}
-
-	private void ShowChatWeaponSubPreferenceMenu(WeaponType weaponType)
+	private void ShowWeaponSubPreferenceMenu(WeaponType weaponType)
 	{
 		ChatMenu primaryPreferenceMenu = new ChatMenu(Localizer.ForPlayer(Controller, "k4.menu.weaponpref.title"));
 		AddWeaponOptions(primaryPreferenceMenu, weaponType);
 		MenuManager.OpenChatMenu(Controller, primaryPreferenceMenu);
-	}
-
-	private void ShowCenterWeaponSubPreferenceMenu(WeaponType weaponType)
-	{
-		var items = new List<MenuItem>();
-		var defaultValues = new Dictionary<int, object>();
-
-		items.Add(new MenuItem(MenuItemType.Bool, new MenuValue($"{Localizer.ForPlayer(Controller, "k4.general.random")}: ")));
-		defaultValues[0] = WeaponPreferences[weaponType] == null;
-
-		List<CsItem> possibleItems = WeaponModel.GetWeaponList(weaponType);
-		for (int i = 0; i < possibleItems.Count; i++)
-		{
-			CsItem item = possibleItems[i];
-			if (WeaponModel.GetWeaponType(item) != weaponType)
-				continue;
-
-			items.Add(new MenuItem(MenuItemType.Bool, new MenuValue($"{Localizer.ForPlayer(Controller, item.ToString())}: ")));
-			defaultValues[i + 1] = WeaponPreferences[weaponType] == item;
-		}
-
-		Plugin.Menu?.ShowScrollableMenu(Controller, Localizer.ForPlayer(Controller, "k4.menu.weaponpref.title"), items, (buttons, menu, selected) =>
-		{
-			switch (buttons)
-			{
-				case MenuButtons.Select:
-					if (selected == null) return;
-
-					SetWeaponPreference(weaponType, menu.Option == 0 ? null : possibleItems[menu.Option - 1]);
-					ShowCenterWeaponSubPreferenceMenu(weaponType);
-					Task.Run(SavePlayerPreferencesAsync);
-					break;
-			}
-		}, true, Config.CommandSettings.FreezeInMenu, 5, defaultValues, Config.CommandSettings.ShowMenuCredits);
 	}
 
 	private void AddWeaponOptions(ChatMenu menu, WeaponType weaponType)

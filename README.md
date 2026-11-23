@@ -37,7 +37,7 @@ This is an updated version of the original [K4-Arenas plugin](https://github.com
 To use this server addon, you'll need the following dependencies installed:
 
 - [**CounterStrikeSharp v1.0.355+**](https://github.com/roflmuffin/CounterStrikeSharp/releases): CounterStrikeSharp allows you to write server plugins in C# for Counter-Strike 2/Source2/CS2.
-- [**KitsuneMenu**](https://github.com/schwarper/KitsuneMenu): Menu library for center menu support (included in release)
+- [**PanoramaManager**](https://www.nuget.org/packages/PanoramaManager): the round banner and the `!guns` / `!rounds` menu on the HUD (copied next to the plugin on build). The layouts in `hud/panorama` ship in the workshop addon.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -81,9 +81,9 @@ public sealed class HudService : IDisposable
 	/// Special rounds from Next-il/Arena1v1-Special-Rounds, by the name they register with. They hand out their own
 	/// weapons, so the icon comes from here. Each title can be overridden in lang/ as k4.hud.round.&lt;name&gt;.
 	/// </summary>
-	private sealed record Special(string Weapon, string Title, bool Headshots);
+	internal sealed record Special(string Weapon, string Title, bool Headshots);
 
-	private static readonly Dictionary<string, Special> SpecialRounds = new(StringComparer.OrdinalIgnoreCase)
+	internal static readonly Dictionary<string, Special> SpecialRounds = new(StringComparer.OrdinalIgnoreCase)
 	{
 		["OnlyHS-AK47"] = new("ak47", "AK-47 round", true),
 		["OnlyHS-SSG08"] = new("ssg08", "Scout round", true),

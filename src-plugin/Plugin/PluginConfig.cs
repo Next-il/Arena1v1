@@ -148,6 +148,12 @@ namespace K4Arenas
 		/// </summary>
 		[JsonPropertyName("Enabled")]
 		public bool Enabled { get; set; } = true;
+
+		/// <summary>
+		/// The !guns / !rounds menu on the HUD (Plugin/PreferencesMenu.cs). Off: the chat menus.
+		/// </summary>
+		[JsonPropertyName("Menu")]
+		public bool Menu { get; set; } = true;
 	}
 
 	public sealed class CompatibilitySettings
@@ -242,17 +248,8 @@ namespace K4Arenas
 			"cdeny"
 		];
 
-		[JsonPropertyName("center-menu-mode")]
-		public bool CenterMenuMode { get; set; } = true;
-
 		[JsonPropertyName("center-announce-mode")]
 		public bool CenterAnnounceMode { get; set; } = true;
-
-		[JsonPropertyName("freeze-in-center-menu")]
-		public bool FreezeInMenu { get; set; } = true;
-
-		[JsonPropertyName("show-menu-credits")]
-		public bool ShowMenuCredits { get; set; } = true;
 	}
 
 	public sealed class DefaultWeaponSettings

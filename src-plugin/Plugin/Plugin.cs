@@ -17,7 +17,9 @@
         //** ? PLUGIN GLOBALS */
         public required PluginConfig Config { get; set; } = new PluginConfig();
         public GameConfig? GameConfig { get; set; }
-        public Menu.KitsuneMenu Menu { get; private set; } = null!;
+        /// <summary>!guns and !rounds on the HUD. Null when Hud.Menu is off, there is no database, or it failed to start:
+        /// the commands then open the chat menus.</summary>
+        public PreferencesMenu? PreferencesMenu { get; private set; }
 
         /// <summary>The round banner. Created once in Load; Enabled is false when Hud.Enabled is off or it failed to start.</summary>
         public HudService Hud { get; private set; } = null!;
@@ -77,12 +79,14 @@
                 base.Logger.LogError("Please setup your MySQL database settings in the configuration file in order to use the preferences system.");
             }
 
-            Menu = new Menu.KitsuneMenu(this);
-
             // Spawned once: the library keeps the panel alive across rounds and maps
             Hud = new HudService(this);
             if (Config.Hud.Enabled)
                 Hud.Init();
+
+            // Without a database the !guns and !rounds commands are not registered, so there is nothing to open
+            if (HasDatabase && Config.Hud.Menu)
+                PreferencesMenu = PreferencesMenu.TryCreate(this);
 
             //** ? Core */
 
@@ -147,6 +151,7 @@
         public override void Unload(bool hotReload)
         {
             Hud?.Dispose();
+            PreferencesMenu?.Dispose();
         }
     }
 }
