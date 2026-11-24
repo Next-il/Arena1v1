@@ -22,7 +22,7 @@
     <PackageReference Include="MySqlConnector" Version="2.4.1" />
     <!-- The round banner (Plugin/HudService.cs). Copied next to the plugin by CopyPanoramaManager below:
          each CounterStrikeSharp plugin loads from its own folder. Same version as our other HUD plugins. -->
-    <PackageReference Include="PanoramaManager" Version="0.4.3" />
+    <PackageReference Include="PanoramaManager" Version="0.4.5" />
     <ProjectReference Include="../src-shared/K4-ArenaSharedApi.csproj">
       <Private>false</Private>
     </ProjectReference>
